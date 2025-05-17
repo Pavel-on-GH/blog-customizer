@@ -1,21 +1,30 @@
-import { ArrowButton } from 'src/ui/arrow-button';
-import { Button } from 'src/ui/button';
+import { useState, useRef } from 'react';
 import clsx from 'clsx';
 
 import styles from './ArticleParamsForm.module.scss';
-import { useState } from 'react';
+
+import { ArrowButton } from 'src/ui/arrow-button';
+import { Button } from 'src/ui/button';
+import { Separator } from 'src/ui/separator';
+import { useOutsideClickClose } from 'src/ui/select/hooks/useOutsideClickClose';
 import { RadioGroup } from 'src/ui/radio-group';
 import { Select } from 'src/ui/select';
+import { Text } from 'src/ui/text';
 import {
 	fontFamilyOptions,
 	fontSizeOptions,
 	fontColors,
 	backgroundColors,
 	contentWidthArr,
+	ArticleStateType,
 } from 'src/constants/articleProps';
-import { Separator } from 'src/ui/separator';
 
-export const ArticleParamsForm = () => {
+type ArticleParamsFormProps = {
+	articleState: ArticleStateType;
+	setArticleState: (props: ArticleStateType) => void;
+};
+
+export const ArticleParamsForm = ({ ...props }: ArticleParamsFormProps) => {
 	// Открытие сайдбара
 	const [isOpenSidebar, setIsOpenSidebar] = useState(false);
 
@@ -47,8 +56,29 @@ export const ArticleParamsForm = () => {
 		setDropdownWidt(contentWidthArr[0]);
 	};
 
+	// Применить выбранные значения
+	const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+		e.preventDefault();
+		setIsOpenSidebar(!isOpenSidebar);
+		props.setArticleState({
+			fontFamilyOption: dropdownFontFamily,
+			fontColor: dropdownFontColors,
+			backgroundColor: dropdownBackground,
+			contentWidth: dropdownWidth,
+			fontSizeOption: selectFontSize,
+		});
+	};
+
+	// Закрытие сайдбара при нажатии вовне
+	const ref = useRef<HTMLDivElement | null>(null);
+	useOutsideClickClose({
+		isOpen: isOpenSidebar,
+		rootRef: ref,
+		onClose: () => setIsOpenSidebar(false),
+	});
+
 	return (
-		<>
+		<div ref={ref}>
 			<ArrowButton
 				isOpen={isOpenSidebar}
 				onClick={() => {
@@ -61,7 +91,11 @@ export const ArticleParamsForm = () => {
 						? clsx(styles.container, styles.container_open)
 						: styles.container
 				}>
-				<form className={styles.form}>
+				<form className={styles.form} onSubmit={(e) => handleSubmit(e)}>
+					<Text as='h2' size={31} weight={800} uppercase>
+						Задайте параметры
+					</Text>
+
 					<Select
 						title='Шрифт'
 						selected={dropdownFontFamily}
@@ -111,6 +145,6 @@ export const ArticleParamsForm = () => {
 					</div>
 				</form>
 			</aside>
-		</>
+		</div>
 	);
 };
