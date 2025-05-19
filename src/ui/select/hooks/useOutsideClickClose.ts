@@ -14,6 +14,10 @@ export const useOutsideClickClose = ({
 	onChange,
 }: UseOutsideClickClose) => {
 	useEffect(() => {
+		// Проверка, чтобы не вызывать лишних действий при закрытом сайдбаре
+		if (!isOpen) {
+			return;
+		}
 		const handleClick = (event: MouseEvent) => {
 			const { target } = event;
 			if (target instanceof Node && !rootRef.current?.contains(target)) {
